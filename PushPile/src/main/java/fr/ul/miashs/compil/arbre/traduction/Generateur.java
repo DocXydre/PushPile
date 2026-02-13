@@ -22,12 +22,26 @@ public class Generateur {
      * @param aff : noeud d'affectation
      * @return code généré
      */
-    public String genererAffectation(Affectation aff) {
-        StringBuffer code = new StringBuffer();
-        code.append(genererExpression(aff.getFilsDroit()));
-        code.append("\tPOP(R0)\n");
-        Idf var = (Idf) aff.getFilsGauche();
-        code.append("\tST(R0, " + var.getValeur() + ")\n");
+    public String genererAffectation(Affectation a) {
+        StringBuilder code = new StringBuilder();
+        code.append(genererExpression(a.getFilsDroit()));
+
+        Noeud gauche = a.getFilsGauche();
+
+        if (gauche instanceof Idf gaucheIdf) {
+            if (this.tds.getItem(gaucheIdf.getValeur().toString()).getCategorie().equals(Categorie.LOCAL.getCategorie())) {
+                int offset = (this.tds.getItem(gaucheIdf.getValeur().toString()).getRang() + 1) * -4;
+                code.append("  PUTFRAME(R0, ").append(offset).append(")\n");
+            } else {
+                String nomVariable = gaucheIdf.getValeur().toString();
+                code.append("  ST(R0").append(", ").append(nomVariable).append(")\n");
+            }
+        } else if (gauche instanceof Const constante) {
+            int constanteValeur = constante.getValeur();
+            code.append("  CMOVE(").append(constanteValeur).append(", R0").append(")\n");
+            code.append("  ST(R0").append(",").append(constanteValeur).append(")\n");
+        }
+
         return code.toString();
     }
     /**
