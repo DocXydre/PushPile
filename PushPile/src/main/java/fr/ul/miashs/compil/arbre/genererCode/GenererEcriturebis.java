@@ -53,5 +53,7 @@ public class GenererEcriturebis {
         tds.getItems().add(new Item("b", "int", Categorie.GLOBAL));
 
         System.out.println(generateur.generer_programme(prog));
+          TxtAfficheur.afficher(prog);
+         GuiAfficheur.afficher(prog);
     }
 }

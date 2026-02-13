@@ -54,5 +54,7 @@ public class GenererIteration {
         tds.getItems().add(new Item("i", "int", Categorie.GLOBAL));
 
         System.out.println(generateur.generer_programme(prog));
+          TxtAfficheur.afficher(prog);
+         GuiAfficheur.afficher(prog);
     }
 }

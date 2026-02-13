@@ -54,5 +54,7 @@ public class GenererCondition {
         tds.getItems().add(new Item("x", "int", Categorie.GLOBAL));
 
         System.out.println(generateur.generer_programme(prog));
+          TxtAfficheur.afficher(prog);
+         GuiAfficheur.afficher(prog);
     }
 }

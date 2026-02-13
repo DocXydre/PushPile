@@ -74,5 +74,7 @@ public class GenererVarParam {
         tds.getItems().add(new Item("res", "int", Categorie.LOCAL, 0, 0, 0, 0, "f"));
 
         System.out.println(generateur.generer_programme(prog));
+          TxtAfficheur.afficher(prog);
+         GuiAfficheur.afficher(prog);
     }
 }
