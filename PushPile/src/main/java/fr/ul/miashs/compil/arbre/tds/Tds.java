@@ -15,11 +15,11 @@ private final ArrayList<Item> tds;
         } //
     }
 
-    public ArrayList<Item> getSymboles() {
+    public ArrayList<Item> getItems() {
         return tds;
     }
 
-    public Item getSymbole(String nom) {
+    public Item getItem(String nom) {
         for (Item symbole : tds) {
             if (symbole.getNom().equals(nom)) {
                 return symbole;
