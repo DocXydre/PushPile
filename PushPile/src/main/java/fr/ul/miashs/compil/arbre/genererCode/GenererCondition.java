@@ -49,8 +49,8 @@ public class GenererCondition {
         si.setBlocSinon(blocElse);
 
         tds.getItems().add(new Item("main", "void", Categorie.FONCTION));
-        tds.getItems().add(new Item("a", "int", Categorie.GLOBAL));
-        tds.getItems().add(new Item("b", "int", Categorie.GLOBAL));
+        tds.getItems().add(new Item("a", "int", Categorie.GLOBAL, 1));
+        tds.getItems().add(new Item("b", "int", Categorie.GLOBAL, 2));
         tds.getItems().add(new Item("x", "int", Categorie.GLOBAL));
 
         System.out.println(generateur.generer_programme(prog));

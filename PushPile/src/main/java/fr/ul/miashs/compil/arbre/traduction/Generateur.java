@@ -190,7 +190,8 @@ public class Generateur {
             code.append(genererInstruction(fils));
         }
         code.append("ret_").append(f.getValeur()).append(":\n");
-            code.append("  DEALLOCATE(").append(this.tds.getItem(f.getValeur().toString()).getNbVariables()).append(")\n")
+            // code.append("  DEALLOCATE(").append(this.tds.getItem(f.getValeur().toString()).getNbVariables()).append(")\n")
+            code.append("DEALLOCATE(0)\n")
                     .append("  POP(BP)\n")
                     .append("  POP(LP)\n")
                     .append("  RTN()\n");
@@ -199,6 +200,10 @@ public class Generateur {
         return code.toString();
     }
 
+    private StringBuilder append(String string) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'append'");
+    }
     public String genererEcriture(Ecrire e) {
         StringBuffer code = new StringBuffer();
         code.append(genererExpression(e.getLeFils()));
