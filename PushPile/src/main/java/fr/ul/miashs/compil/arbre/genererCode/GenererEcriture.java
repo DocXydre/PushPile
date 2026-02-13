@@ -46,7 +46,8 @@ public class GenererEcriture {
 
         TxtAfficheur.afficher(prog);
         GuiAfficheur.afficher(prog);
-
+        TxtAfficheur.afficher(prog);
+        GuiAfficheur.afficher(prog);
 
     }
     
