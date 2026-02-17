@@ -7,6 +7,7 @@ import fr.ul.miashs.compil.arbre.traduction.*;
 import fr.ul.miashs.compil.arbre.*;
 
 public class GenererEcriture {
+    
     public static void main(String[] args) {
         Tds tds = new Tds(new ArrayList<>());
         Generateur generateur = new Generateur(tds);
@@ -44,11 +45,10 @@ public class GenererEcriture {
         tds.getItems().add(new Item("res", "int", Categorie.GLOBAL));
         System.out.println(generateur.generer_programme(prog));
 
+        System.out.println("\n Affichage de l'arbre :");
         TxtAfficheur.afficher(prog);
         GuiAfficheur.afficher(prog);
-        TxtAfficheur.afficher(prog);
-        GuiAfficheur.afficher(prog);
-
+        
     }
     
 }

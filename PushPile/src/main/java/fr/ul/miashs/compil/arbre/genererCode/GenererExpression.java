@@ -46,6 +46,7 @@ public class GenererExpression {
         tds.getItems().add(new Item("b", "int", Categorie.GLOBAL, 170));
         System.out.println(generateur.generer_programme(prog));
 
+        System.out.println("\n Affichage de l'arbre :");
         TxtAfficheur.afficher(prog);
         GuiAfficheur.afficher(prog);
 

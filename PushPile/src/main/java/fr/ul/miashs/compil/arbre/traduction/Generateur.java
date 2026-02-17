@@ -185,8 +185,7 @@ public class Generateur {
         code.append("PUSH(LP)\n")
             .append("PUSH(BP)\n")
             .append("MOVE(SP, BP)\n")
-            //.append("ALLOCATE(").append(this.tds.getItem(f.getValeur().toString()).getNbVariables()).append(")\n");
-            .append("ALLOCATE(0)\n");
+            .append("ALLOCATE(").append(this.tds.getItem(f.getValeur().toString()).getNbVariables()).append(")\n");
         for (Noeud fils : f.getFils()) {
             code.append(genererInstruction(fils));
         }

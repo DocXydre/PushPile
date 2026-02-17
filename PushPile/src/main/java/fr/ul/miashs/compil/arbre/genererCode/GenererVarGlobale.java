@@ -25,6 +25,7 @@ public class GenererVarGlobale {
         System.out.println(generateur.generer_programme(prog));
 
         //afficher
+        System.out.println("\n Affichage de l'arbre :");
         TxtAfficheur.afficher(prog);
         GuiAfficheur.afficher(prog);
 

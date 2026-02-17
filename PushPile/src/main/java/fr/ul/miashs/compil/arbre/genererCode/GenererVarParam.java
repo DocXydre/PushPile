@@ -74,6 +74,8 @@ public class GenererVarParam {
         tds.getItems().add(new Item("res", "int", Categorie.LOCAL, 0, 0, 0, 0, "f"));
 
         System.out.println(generateur.generer_programme(prog));
+
+        System.out.println("\n Affichage de l'arbre :");
           TxtAfficheur.afficher(prog);
          GuiAfficheur.afficher(prog);
     }
