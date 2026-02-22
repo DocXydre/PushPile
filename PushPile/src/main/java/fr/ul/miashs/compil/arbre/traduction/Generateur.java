@@ -23,26 +23,49 @@ public class Generateur {
      * @return code généré
      */
     public String genererAffectation(Affectation a) {
-        StringBuilder code = new StringBuilder();
-        code.append(genererExpression(a.getFilsDroit()));
+        // StringBuilder code = new StringBuilder();
+        // code.append(genererExpression(a.getFilsDroit()));
 
-        Noeud gauche = a.getFilsGauche();
+        // code.append("  POP(R0)\n");
 
-        if (gauche instanceof Idf gaucheIdf) {
-            if (this.tds.getItem(gaucheIdf.getValeur().toString()).getCategorie().equals(Categorie.LOCAL.getCategorie())) {
-                int offset = (this.tds.getItem(gaucheIdf.getValeur().toString()).getRang() + 1) * -4;
-                code.append("  PUTFRAME(R0, ").append(offset).append(")\n");
-            } else {
-                String nomVariable = gaucheIdf.getValeur().toString();
-                code.append("  ST(R0").append(", ").append(nomVariable).append(")\n");
-            }
-        } else if (gauche instanceof Const constante) {
-            int constanteValeur = constante.getValeur();
-            code.append("  CMOVE(").append(constanteValeur).append(", R0").append(")\n");
-            code.append("  ST(R0").append(",").append(constanteValeur).append(")\n");
+        // Noeud gauche = a.getFilsGauche();
+
+        // if (gauche instanceof Idf gaucheIdf) {
+        //     if (this.tds.getItem(gaucheIdf.getValeur().toString()).getCategorie().equals(Categorie.LOCAL.getCategorie())) {
+        //         int offset = (this.tds.getItem(gaucheIdf.getValeur().toString()).getRang() + 1) * -4;
+        //         code.append("  PUTFRAME(R0, ").append(offset).append(")\n");
+        //     } else {
+        //         String nomVariable = gaucheIdf.getValeur().toString();
+        //         code.append("  ST(R0").append(", ").append(nomVariable).append(")\n");
+        //     }
+        // } else if (gauche instanceof Const constante) {
+        //     int constanteValeur = constante.getValeur();
+        //     code.append("  CMOVE(").append(constanteValeur).append(", R0").append(")\n");
+        //     code.append("  ST(R0").append(",").append(constanteValeur).append(")\n");
+        // }
+
+        // return code.toString();
+        
+    StringBuilder code = new StringBuilder();
+    // Calcule l'expression à droite et la met sur la pile
+    code.append(genererExpression(a.getFilsDroit()));
+
+    // RÉCUPÈRE le résultat de l'expression
+    code.append("  POP(R0)          | Résultat final de l'expression\n");
+
+    Noeud gauche = a.getFilsGauche();
+    if (gauche instanceof Idf gaucheIdf) {
+        Item item = this.tds.getItem(gaucheIdf.getValeur().toString());
+        // Stockage selon le scope (Global ou Local)
+        if (item.getCategorie().equals(Categorie.LOCAL.getCategorie())) {
+            int offset = (item.getRang() + 1) * -4;
+            code.append("  PUTFRAME(R0, ").append(offset).append(")\n");
+        } else {
+            code.append("  ST(R0, ").append(gaucheIdf.getValeur()).append(")\n");
         }
+    }
+    return code.toString();
 
-        return code.toString();
     }
     /**
      * Générer le code pour une expression
@@ -50,106 +73,197 @@ public class Generateur {
      * @return code généré
      */
     public String genererExpression(Noeud expr) {
-        StringBuffer code = new StringBuffer();
-        if (expr instanceof Idf) {
-            Idf idf = (Idf) expr;
-            Item item= this.tds.getItem(idf.getValeur().toString());
-            if (item.getCategorie().equals(Categorie.LOCAL.getCategorie())) {
-                int offset = (item.getRang() + 1) * -4;
-                code.append("  GETFRAME(R0, ").append(offset).append(")\n");
-                code.append("  PUSH(R0)\n");
-            } else if (item.getCategorie().equals(Categorie.PARAMETRE.getCategorie())) {
-                String scope = item.getScope();
-                int offset = (this.tds.getItem(scope).getNbParametres() + 1) - item.getRang() * -4;
-                code.append("  GETFRAME(R0, ").append(offset).append(")\n");
-                code.append("  PUSH(R0)\n");
-            } else {
-                code.append("  LD(").append(item.getNom()).append(", R0)\n");
-                code.append("  PUSH(R0)\n");
-            }
+    if (expr == null) return "";
+    StringBuilder code = new StringBuilder();
 
-        } else if (expr instanceof Const) {
-            Const constante = (Const) expr;
-            code.append("  CMOVE(").append(constante.getValeur()).append(", R0)\n");
-            code.append("  PUSH(R0)\n");
-
-        } else if (expr instanceof Lire) {
-            return genererLecture((Lire) expr);
-
-        } else if (expr instanceof Appel) {
-            return genererAppel((Appel) expr);
-
-        } else if (expr instanceof Superieur) {
-            code.append(genererExpression(expr.getFils().get(0)))
-                    .append("  POP(R1)\n")
-                    .append(genererExpression(expr.getFils().get(1)))
-                    .append("  POP(R2)\n")
-                    .append("  CMPLE(R2, R1, R0)\n");
-
-        } else if (expr instanceof Inferieur) {
-            code.append(genererExpression(expr.getFils().get(0)))
-                    .append("  POP(R1)\n")
-                    .append(genererExpression(expr.getFils().get(1)))
-                    .append("  POP(R2)\n")
-                    .append("  CMPLT(R1, R2, R0)\n");
-
-        } else if (expr instanceof Egal) {
-            code.append(genererExpression(expr.getFils().get(0)))
-                    .append("  POP(R1)\n")
-                    .append(genererExpression(expr.getFils().get(1)))
-                    .append("  POP(R2)\n")
-                    .append("  CMPEQ(R2, R1, R0)\n");
-
-        } else if (expr instanceof InferieurEgal) {
-            code.append(genererExpression(expr.getFils().get(0)))
-                    .append("  POP(R1)\n")
-                    .append(genererExpression(expr.getFils().get(1)))
-                    .append("  POP(R2)\n")
-                    .append("  CMPLE(R1, R2, R0)\n");
-
-        } else if (expr instanceof SuperieurEgal) {
-            code.append(genererExpression(expr.getFils().get(0)))
-                    .append("  POP(R1)\n")
-                    .append(genererExpression(expr.getFils().get(1)))
-                    .append("  POP(R2)\n")
-                    .append("  CMPLT(R2, R1, R0)\n");
-
-        } else if (expr != null) {
-            Noeud gauche = expr.getFils().get(0);
-            Noeud droit = expr.getFils().get(1);
-
-            if (!(droit instanceof Idf || droit instanceof Const)) {
-                code.append(genererExpression(droit));
-                if (!(gauche instanceof Idf || gauche instanceof Const)) {
-                    code.append(genererExpression(gauche))
-                            .append("  POP(R1)\n")
-                            .append("  POP(R2)\n");
-                } else {
-                    code.append("  POP(R2)\n")
-                            .append(genererExpression(gauche))
-                            .append("  POP(R1)\n");
-                }
-            } else {
-                code.append(genererExpression(gauche))
-                        .append("  POP(R1)\n")
-                        .append(genererExpression(droit))
-                        .append("  POP(R2)\n");
-            }
-
-            if (expr instanceof Plus) {
-                code.append("  ADD(R1,R2,R0)\n");
-            } else if (expr instanceof Moins) {
-                code.append("  SUB(R1,R2,R0)\n");
-            } else if (expr instanceof Multiplication) {
-                code.append("  MUL(R1,R2,R0)\n");
-            } else if (expr instanceof Division) {
-                code.append("  DIV(R1,R2,R0)\n");
-            }
-            code.append("  PUSH(R0)\n");
+    // 1. Les feuilles (Cas de base)
+    if (expr instanceof Idf idf) {
+        Item item = this.tds.getItem(idf.getValeur().toString());
+        if (item.getCategorie().equals(Categorie.LOCAL.getCategorie())) {
+            int offset = (item.getRang() + 1) * -4;
+            code.append("  GETFRAME(R0, ").append(offset).append(")\n");
+        } else if (item.getCategorie().equals(Categorie.PARAMETRE.getCategorie())) {
+            String scope = item.getScope();
+            int offset = (this.tds.getItem(scope).getNbParametres() + 1 - item.getRang()) * 4;
+            code.append("  GETFRAME(R0, ").append(offset).append(")\n");
+        } else {
+            code.append("  LD(").append(item.getNom()).append(", R0)\n");
         }
+        code.append("  PUSH(R0)\n");
 
-        return code.toString();
+    } else if (expr instanceof Const constante) {
+        code.append("  CMOVE(").append(constante.getValeur()).append(", R0)\n");
+        code.append("  PUSH(R0)\n");
+
+    } else if (expr instanceof Lire) {
+        return genererLecture((Lire) expr);
+
+    } else if (expr instanceof Appel) {
+        return genererAppel((Appel) expr);
+
+    // 2. Les opérations Binaires (Arithmétique)
+    } else if (expr instanceof Plus || expr instanceof Moins || expr instanceof Multiplication || expr instanceof Division) {
+        // On génère le fils GAUCHE (mis sur la pile)
+        code.append(genererExpression(expr.getFils().get(0)));
+        // On génère le fils DROIT (mis au sommet de la pile)
+        code.append(genererExpression(expr.getFils().get(1)));
+
+        // On dépile dans l'ordre inverse
+        code.append("  POP(R2)          | Valeur droite\n");
+        code.append("  POP(R1)          | Valeur gauche\n");
+
+        if (expr instanceof Plus) code.append("  ADD(R1, R2, R0)\n");
+        else if (expr instanceof Moins) code.append("  SUB(R1, R2, R0)\n");
+        else if (expr instanceof Multiplication) code.append("  MUL(R1, R2, R0)\n");
+        else if (expr instanceof Division) code.append("  DIV(R1, R2, R0)\n");
+
+        code.append("  PUSH(R0)\n");
+
+    // 3. Les opérations de comparaison
+    } else if (expr instanceof Superieur || expr instanceof Inferieur || expr instanceof Egal || expr instanceof InferieurEgal || expr instanceof SuperieurEgal) {
+        code.append(genererExpression(expr.getFils().get(0)));
+        code.append(genererExpression(expr.getFils().get(1)));
+        code.append("  POP(R2)\n");
+        code.append("  POP(R1)\n");
+
+        if (expr instanceof Superieur) code.append("  CMPLT(R2, R1, R0)\n");
+        else if (expr instanceof Inferieur) code.append("  CMPLT(R1, R2, R0)\n");
+        else if (expr instanceof Egal) code.append("  CMPEQ(R1, R2, R0)\n");
+        else if (expr instanceof InferieurEgal) code.append("  CMPLE(R1, R2, R0)\n");
+        else if (expr instanceof SuperieurEgal) code.append("  CMPLE(R2, R1, R0)\n");
+
+        code.append("  PUSH(R0)\n");
     }
+
+    return code.toString();
+}
+    // public String genererExpression(Noeud expr) {
+    //     StringBuffer code = new StringBuffer();
+    //     if (expr instanceof Idf) {
+    //         Idf idf = (Idf) expr;
+    //         Item item= this.tds.getItem(idf.getValeur().toString());
+    //         if (item.getCategorie().equals(Categorie.LOCAL.getCategorie())) {
+    //             int offset = (item.getRang() + 1) * -4;
+    //             code.append("  GETFRAME(R0, ").append(offset).append(")\n");
+    //             code.append("  PUSH(R0)\n");
+    //         } else if (item.getCategorie().equals(Categorie.PARAMETRE.getCategorie())) {
+    //             String scope = item.getScope();
+    //             int offset = (this.tds.getItem(scope).getNbParametres() + 1) - item.getRang() * -4;
+    //             code.append("  GETFRAME(R0, ").append(offset).append(")\n");
+    //             code.append("  PUSH(R0)\n");
+    //         } else {
+    //             code.append("  LD(").append(item.getNom()).append(", R0)\n");
+    //             code.append("  PUSH(R0)\n");
+    //         }
+
+    //     } // Dans genererExpression
+    //      else if (expr != null) {
+    //         // 1. Générer le fils GAUCHE (il sera en bas dans la pile)
+    //         code.append(genererExpression(expr.getFils().get(0)));
+            
+    //         // 2. Générer le fils DROIT (il sera au sommet de la pile)
+    //         code.append(genererExpression(expr.getFils().get(1)));
+
+    //         // 3. Récupérer les valeurs dans l'ordre inverse
+    //         code.append("  POP(R2)          | Récupère la valeur de DROITE\n");
+    //         code.append("  POP(R1)          | Récupère la valeur de GAUCHE\n");
+
+    //         // 4. Calculer (R1 OP R2)
+    //         if (expr instanceof Plus) {
+    //             code.append("  ADD(R1, R2, R0)\n");
+    //         } else if (expr instanceof Moins) {
+    //             code.append("  SUB(R1, R2, R0)\n");
+    //         } else if (expr instanceof Multiplication) {
+    //             code.append("  MUL(R1, R2, R0)\n");
+    //         } else if (expr instanceof Division) {
+    //             code.append("  DIV(R1, R2, R0)\n");
+    //         }
+            
+    //         // 5. Remettre le résultat sur la pile pour le nœud parent
+    //         code.append("  PUSH(R0)\n");
+    //     }
+    //     else if (expr instanceof Const) {
+    //         Const constante = (Const) expr;
+    //         code.append("  CMOVE(").append(constante.getValeur()).append(", R0)\n");
+    //         code.append("  PUSH(R0)\n");
+
+    //     } else if (expr instanceof Lire) {
+    //         return genererLecture((Lire) expr);
+
+    //     } else if (expr instanceof Appel) {
+    //         return genererAppel((Appel) expr);
+
+    //     } else if (expr instanceof Superieur) {
+    //         code.append(genererExpression(expr.getFils().get(0)))
+    //                 .append("  POP(R1)\n")
+    //                 .append(genererExpression(expr.getFils().get(1)))
+    //                 .append("  POP(R2)\n")
+    //                 .append("  CMPLE(R2, R1, R0)\n");
+
+    //     } else if (expr instanceof Inferieur) {
+    //         code.append(genererExpression(expr.getFils().get(0)))
+    //                 .append("  POP(R1)\n")
+    //                 .append(genererExpression(expr.getFils().get(1)))
+    //                 .append("  POP(R2)\n")
+    //                 .append("  CMPLT(R1, R2, R0)\n");
+
+    //     } else if (expr instanceof Egal) {
+    //         code.append(genererExpression(expr.getFils().get(0)))
+    //                 .append("  POP(R1)\n")
+    //                 .append(genererExpression(expr.getFils().get(1)))
+    //                 .append("  POP(R2)\n")
+    //                 .append("  CMPEQ(R2, R1, R0)\n");
+
+    //     } else if (expr instanceof InferieurEgal) {
+    //         code.append(genererExpression(expr.getFils().get(0)))
+    //                 .append("  POP(R1)\n")
+    //                 .append(genererExpression(expr.getFils().get(1)))
+    //                 .append("  POP(R2)\n")
+    //                 .append("  CMPLE(R1, R2, R0)\n");
+
+    //     } else if (expr instanceof SuperieurEgal) {
+    //         code.append(genererExpression(expr.getFils().get(0)))
+    //                 .append("  POP(R1)\n")
+    //                 .append(genererExpression(expr.getFils().get(1)))
+    //                 .append("  POP(R2)\n")
+    //                 .append("  CMPLT(R2, R1, R0)\n");
+
+    //     } else if (expr != null) {
+    //         Noeud gauche = expr.getFils().get(0);
+    //         Noeud droit = expr.getFils().get(1);
+
+    //         if (!(droit instanceof Idf || droit instanceof Const)) {
+    //             code.append(genererExpression(droit));
+    //             if (!(gauche instanceof Idf || gauche instanceof Const)) {
+    //                 code.append(genererExpression(gauche))
+    //                         .append("  POP(R1)\n")
+    //                         .append("  POP(R2)\n");
+    //             } else {
+    //                 code.append("  POP(R2)\n")
+    //                         .append(genererExpression(gauche))
+    //                         .append("  POP(R1)\n");
+    //             }
+    //         } else {
+    //             code.append(genererExpression(gauche))
+    //                     .append("  POP(R1)\n")
+    //                     .append(genererExpression(droit))
+    //                     .append("  POP(R2)\n");
+    //         }
+
+    //         if (expr instanceof Plus) {
+    //             code.append("  ADD(R1,R2,R0)\n");
+    //         } else if (expr instanceof Moins) {
+    //             code.append("  SUB(R1,R2,R0)\n");
+    //         } else if (expr instanceof Multiplication) {
+    //             code.append("  MUL(R1,R2,R0)\n");
+    //         } else if (expr instanceof Division) {
+    //             code.append("  DIV(R1,R2,R0)\n");
+    //         }
+    //         code.append("  PUSH(R0)\n");
+    //     }
+
+    //     return code.toString();
+    // }
 
     //a revoir 
     private String genererData() {
@@ -165,8 +279,13 @@ public class Generateur {
     }
     public String generer_programme(Prog porg) {
         StringBuffer code = new StringBuffer();
+
+        
         code.append(".include beta.uasm\n");
         code.append(".include intio.uasm\n");
+        if (contientLecture(porg)) {
+        code.append(".options tty\n");
+        }
         code.append("CMOVE(pile, SP)\n");
         code.append("CALL(main)\n");
         code.append("HALT()\n");
@@ -175,7 +294,7 @@ public class Generateur {
         for (Noeud fonction : porg.getFils()) {
             code.append(genererFonction((Fonction) fonction));
         }        
-        code.append("pile:");
+        code.append("pile: \n");
         return code.toString();
     }
 
@@ -199,6 +318,16 @@ public class Generateur {
         
         return code.toString();
     }
+
+    private boolean contientLecture(Noeud n) {
+    if (n instanceof Lire) return true;
+    if (n.getFils() != null) {
+        for (Noeud fils : n.getFils()) {
+            if (contientLecture(fils)) return true;
+        }
+    }
+    return false;
+}
 
     private StringBuilder append(String string) {
         // TODO Auto-generated method stub
