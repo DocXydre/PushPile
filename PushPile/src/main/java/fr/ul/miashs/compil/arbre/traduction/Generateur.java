@@ -181,13 +181,26 @@ public class Generateur {
         return code.toString();
     }
 //retour de fonction
-    public String genererRetour(Retour r) {
+   /* public String genererRetour(Retour r) {
         StringBuilder code = new StringBuilder();
         code.append(genererExpression(r.getLeFils()));
         code.append("\tPOP(R0)\n");
         
         Item func = this.tds.getItem(r.getValeur().toString());
        
+        code.append("\tPUTFRAME(R0, ").append(offsetRes).append(")\n");
+        code.append("\tBR(ret_").append(r.getValeur()).append(")\n");
+        return code.toString();
+    }
+    */
+    public String genererRetour(Retour r) {
+        StringBuilder code = new StringBuilder();
+        code.append(genererExpression(r.getLeFils()));
+        code.append("\tPOP(R0)\n");
+        
+        Item func = this.tds.getItem(r.getValeur().toString());
+        int offsetRes = (func.getNbVariables() + 1) * -4; // Espace pour les variables locales + LP + BP
+        
         code.append("\tPUTFRAME(R0, ").append(offsetRes).append(")\n");
         code.append("\tBR(ret_").append(r.getValeur()).append(")\n");
         return code.toString();
