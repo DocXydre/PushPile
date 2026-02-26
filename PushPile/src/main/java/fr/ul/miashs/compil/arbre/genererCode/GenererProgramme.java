@@ -7,7 +7,7 @@ import fr.ul.miashs.compil.arbre.traduction.Generateur;
 
 public class GenererProgramme {
     public static void main(String[] args) {
-        // Création d'une TDS d'exemple
+       
         Tds tds = new Tds(new ArrayList<>());
         Generateur gen = new Generateur(tds);
          

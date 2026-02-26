@@ -13,7 +13,7 @@ public class GenererEcriturebis {
         Tds tds = new Tds(new ArrayList<>());
         Generateur generateur = new Generateur(tds);
 
-        // Création des noeuds
+        
         Prog prog = new Prog();
         Fonction main = new Fonction("main");
         Ecrire ecrire = new Ecrire();
@@ -30,7 +30,7 @@ public class GenererEcriturebis {
         Const c5 = new Const(5);
         Const c3 = new Const(3);
 
-        // Construction de l'arbre
+
         prog.ajouterUnFils(main);
         main.ajouterUnFils(ecrire);
         ecrire.ajouterUnFils(plus);
@@ -47,7 +47,7 @@ public class GenererEcriturebis {
         moins.setFilsGauche(b);
         moins.setFilsDroit(c5);
 
-        // TDS
+      
         tds.getItems().add(new Item("main", "void", Categorie.FONCTION));
         tds.getItems().add(new Item("a", "int", Categorie.GLOBAL));
         tds.getItems().add(new Item("b", "int", Categorie.GLOBAL));

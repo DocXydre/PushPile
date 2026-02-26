@@ -15,7 +15,7 @@ public class GenererVarParam {
 
         Prog prog = new Prog();
 
-        // Fonction f
+        
         Fonction f = new Fonction("f");
         Affectation aff = new Affectation();
         Idf res = new Idf("res");
@@ -49,7 +49,7 @@ public class GenererVarParam {
         f.ajouterUnFils(retour);
         retour.setLeFils(res);
 
-        // Fonction main
+      
         Fonction main = new Fonction("main");
         Ecrire ecrire = new Ecrire();
         Appel appel = new Appel("f");
@@ -62,7 +62,7 @@ public class GenererVarParam {
         appel.ajouterUnFils(a2);
         appel.ajouterUnFils(c);
 
-        // TDS
+  
         tds.getItems().add(new Item("main", "void", Categorie.FONCTION));
         tds.getItems().add(new Item("f", "int", Categorie.FONCTION, 0, 2, 1, 0, null));
 
