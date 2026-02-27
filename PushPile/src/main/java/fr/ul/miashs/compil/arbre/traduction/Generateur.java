@@ -2,7 +2,6 @@
 
 package fr.ul.miashs.compil.arbre.traduction;
 
-import java.util.Objects;
 import fr.ul.miashs.compil.arbre.*;
 import fr.ul.miashs.compil.arbre.tds.*;
 
@@ -36,7 +35,7 @@ public class Generateur {
             code.append(genererFonction((Fonction) fonction));
         }
         
-        code.append("\npile: LONG(0)\n"); // Espace pour la pile
+        code.append("\npile: . = . + 0x1000\n"); // Espace de 4Ko pour la pile
         return code.toString();
     }
 //data
@@ -68,7 +67,7 @@ public class Generateur {
         }
 
         code.append("ret_").append(nomF).append(":\n")
-            .append("\tDEALLOCATE(").append(funcItem.getNbVariables()).append(")\n")
+            .append("\tMOVE(BP, SP)\n") // Restaure SP de façon garantie (remplace DEALLOCATE)
             .append("\tPOP(BP)\n")
             .append("\tPOP(LP)\n")
             .append("\tRTN()\n\n");
@@ -85,11 +84,14 @@ public class Generateur {
             Item item = this.tds.getItem(idf.getValeur().toString());
             if (item.getCategorie().equals(Categorie.LOCAL.getCategorie())) {
                 int offset = (item.getRang() + 1) * -4;
-                code.append("\tGETFRAME(R0, ").append(offset).append(")\n");
+                code.append("\tLD(BP, ").append(offset).append(", R0)\n");
             } else if (item.getCategorie().equals(Categorie.PARAMETRE.getCategorie())) {
-               
-                int offset = (item.getRang() + 3) * -4;
-                code.append("\tGETFRAME(R0, ").append(offset).append(")\n");
+                // Calcul robuste pour N paramètres
+                Item fonctionAssociee = this.tds.getItem(item.getScope());
+                int nbParams = fonctionAssociee.getNbParametres();
+                int offset = -(2 + nbParams - item.getRang()) * 4;
+                
+                code.append("\tLD(BP, ").append(offset).append(", R0)\n");
             } else {
                 code.append("\tLD(").append(item.getNom()).append(", R0)\n");
             }
@@ -159,7 +161,7 @@ public class Generateur {
         
         if (item.getCategorie().equals(Categorie.LOCAL.getCategorie())) {
             int offset = (item.getRang() + 1) * -4;
-            code.append("\tPUTFRAME(R0, ").append(offset).append(")\n");
+            code.append("\tST(R0, ").append(offset).append(", BP)\n");
         } else {
             code.append("\tST(R0, ").append(item.getNom()).append(")\n");
         }
@@ -170,14 +172,22 @@ public class Generateur {
         StringBuilder code = new StringBuilder();
         Item func = this.tds.getItem(a.getValeur().toString());
         
-        if (!func.getType().equals("void")) code.append("\tALLOCATE(1)\n");
-        
-        for (Noeud arg : a.getFils()) code.append(genererExpression(arg));
-        
+        // Générer et pusher tous les paramètres
+        for (Noeud arg : a.getFils()) {
+            code.append(genererExpression(arg));
+        }
+
+        // Appeler la fonction
         code.append("\tCALL(").append(a.getValeur()).append(")\n");
+
+        // Deallouer les paramètres (le résultat est dans R0)
         code.append("\tDEALLOCATE(").append(func.getNbParametres()).append(")\n");
+
+        // Pusher le résultat si non void
+        if (!func.getType().equals("void")) {
+            code.append("\tPUSH(R0)\n");
+        }
         
-       
         return code.toString();
     }
 //retour de fonction
@@ -197,14 +207,10 @@ public class Generateur {
         StringBuilder code = new StringBuilder();
         code.append(genererExpression(r.getLeFils()));
         code.append("\tPOP(R0)\n");
-        
-        Item func = this.tds.getItem(r.getValeur().toString());
-        int offsetRes = (func.getNbVariables() + 1) * -4; // Espace pour les variables locales + LP + BP
-        
-        code.append("\tPUTFRAME(R0, ").append(offsetRes).append(")\n");
         code.append("\tBR(ret_").append(r.getValeur()).append(")\n");
         return code.toString();
     }
+   
 //conditionnel
     public String genererConditionnel(Si s) {
         String labelElse = getNextLabel("else");

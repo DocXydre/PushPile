@@ -31,4 +31,14 @@ private final ArrayList<Item> tds;
     public void Rechercher(){}
     public void Ajouter(){}
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Table des symboles:\n");
+        for (Item item : tds) {
+            sb.append(item.toString()).append("\n");
+        }
+        return sb.toString();
+    }
+
 }

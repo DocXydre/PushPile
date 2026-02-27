@@ -49,6 +49,7 @@ public class GenererEcriture {
         TxtAfficheur.afficher(prog);
         GuiAfficheur.afficher(prog);
         
+        System.out.println(tds);
     }
     
 }

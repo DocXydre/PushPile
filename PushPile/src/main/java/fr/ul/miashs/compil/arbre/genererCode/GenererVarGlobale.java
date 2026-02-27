@@ -29,6 +29,7 @@ public class GenererVarGlobale {
         TxtAfficheur.afficher(prog);
         GuiAfficheur.afficher(prog);
 
+        System.out.println(tds);
     }
     
 }

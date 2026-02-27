@@ -61,5 +61,7 @@ public class GenererIteration {
         System.out.println("\n Affichage de l'arbre :");
         TxtAfficheur.afficher(prog);
         GuiAfficheur.afficher(prog);
+
+        System.out.println(tds);
     }
 }

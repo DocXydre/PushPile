@@ -51,7 +51,8 @@ public class GenererRecursivite {
         ecrire.ajouterUnFils(appel2);
         appel2.ajouterUnFils(c6);
 
-        tds.getItems().add(new Item("main", "void", Categorie.FONCTION));
+        // fonction main sans paramètres ni variables locales : initialise tous les compteurs à 0
+        tds.getItems().add(new Item("main", "void", Categorie.FONCTION, 0, 0, 0, 0, null));
         tds.getItems().add(new Item("f", "int", Categorie.FONCTION, 0, 1, 0, 0, null));
         tds.getItems().add(new Item("a", "int", Categorie.PARAMETRE, 0, 0, 0, 0, "f"));
 

@@ -49,13 +49,15 @@ public class GenererEcriturebis {
 
       
         tds.getItems().add(new Item("main", "void", Categorie.FONCTION));
-        tds.getItems().add(new Item("a", "int", Categorie.GLOBAL));
-        tds.getItems().add(new Item("b", "int", Categorie.GLOBAL));
+        tds.getItems().add(new Item("a", "int", Categorie.GLOBAL, 100));
+        tds.getItems().add(new Item("b", "int", Categorie.GLOBAL, 170));
 
         System.out.println(generateur.generer_programme(prog));
 
         System.out.println("\n Affichage de l'arbre :");
           TxtAfficheur.afficher(prog);
          GuiAfficheur.afficher(prog);
+
+        System.out.println(tds);
     }
 }

@@ -5,6 +5,7 @@ import fr.ul.miashs.compil.arbre.*;
 import fr.ul.miashs.compil.arbre.tds.*;
 import fr.ul.miashs.compil.arbre.traduction.Generateur;
 
+//Exemple 1 : Programme minimal
 public class GenererProgramme {
     public static void main(String[] args) {
        
@@ -24,6 +25,8 @@ public class GenererProgramme {
         System.out.println("\n Affichage de l'arbre :");
         TxtAfficheur.afficher(prog);
         GuiAfficheur.afficher(prog);
+        
+        System.out.println(tds);
     }
     
 }
