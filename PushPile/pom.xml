@@ -116,5 +116,10 @@
 			<version>4.13.1</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+            <groupId>com.github.vbmacher</groupId>
+            <artifactId>java-cup-runtime</artifactId>
+            <version>11b-20160615-3</version>
+        </dependency>
 	</dependencies>
 </project>
