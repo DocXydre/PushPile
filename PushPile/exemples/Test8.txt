@@ -1,0 +1,11 @@
+aliment ingrédients quantité a mélanger 100 ;
+aliment ingrédients quantité c mélanger 170 ;
+
+repas quantité f ) param quantité a , param quantité b ( }
+    épice ingrédients quantité res mélanger ) a monter 2 ( ajouter ) ) b réduire 5 ( couper 3 ( ;
+    dresser res ;
+{
+
+vide recette ) ( }
+    servir ) prêt f ) a , c ( ( ;
+{

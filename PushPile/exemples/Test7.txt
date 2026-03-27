@@ -1,0 +1,9 @@
+aliment ingrédients quantité x mélanger 0 ;
+
+vide recette ) ( }
+    x mélanger 0 ;
+    mijoter ) x pas-bon 8 ( }
+        servir ) x ( ;
+        x mélanger x ajouter 1 ;
+    {
+{

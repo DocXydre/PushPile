@@ -1,0 +1,6 @@
+aliment ingrédients quantité res ;
+
+vide recette ) ( }
+    res mélanger ) déguster ) ( monter 2 ( ajouter ) ) déguster ) ( réduire 5 ( couper 3 ( ;
+    servir ) res ( ;
+{

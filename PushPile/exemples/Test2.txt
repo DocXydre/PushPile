@@ -1,0 +1,7 @@
+aliment ingrédients quantité i mélanger 10 ;
+aliment ingrédients quantité j mélanger 20 ;
+aliment ingrédients quantité k ;
+aliment ingrédients quantité l ;
+
+vide recette ) ( }
+{

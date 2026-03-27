@@ -1,0 +1,7 @@
+aliment ingrédients quantité x mélanger 0 ;
+aliment ingrédients quantité a mélanger 100 ;
+aliment ingrédients quantité b mélanger 170 ;
+
+vide recette ) ( }
+    x mélanger ) a monter 2 ( ajouter ) ) b réduire 5 ( couper 3 ( ;
+{

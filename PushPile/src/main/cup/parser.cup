@@ -1,0 +1,178 @@
+package fr.ul.miashs.compil.parser;
+
+import java_cup.runtime.*;
+import java.util.ArrayList;
+import fr.ul.miashs.compil.arbre.*;
+
+// Code utilisateur pour le parser
+parser code {:
+    public void syntax_error(Symbol cur_token) {
+        System.err.println("Erreur de syntaxe de recette à la ligne " + cur_token.left + ", colonne " + cur_token.right);
+    }
+:}
+
+/* ==========================================================
+   TERMINAUX (Tokens générés par JFlex)
+   ========================================================== */
+
+/* Mots-clés de base */
+terminal ALIMENT, EPICE, PARAM;             // Portées
+terminal INGREDIENTS, REPAS, RECETTE;       // Déclarations (variables, fonction, main)
+terminal QUANTITE, CUILLERE, PETITE_CUILLERE, VIDE; // Types (int, float, void)
+
+/* Instructions */
+terminal MELANGER;                          // Affectation (=)
+terminal SERVIR, DEGUSTER;                  // Ecrire / Lire
+terminal CUIT, CRUE;                        // If / Else
+terminal MIJOTER, ETAPE;                    // While / For
+terminal PRET, DRESSER;                     // Call / Return
+
+/* Opérateurs arithmétiques */
+terminal AJOUTER, REDUIRE, MONTER, FOUETTER, COUPER; 
+
+/* Opérateurs logiques et booléens */
+terminal MEILLEUR, UN_PEU_MEILLEUR, PAS_BON, UN_PEU_BON, PARFAIT, ETONNANT;
+terminal MANGEABLE, IMMANGEABLE;            // True / False
+
+/* Symboles de ponctuation inversés selon vos règles */
+// PAR_O correspond au caractère ')', PAR_F correspond à '('
+// ACCO_O correspond au caractère '}', ACCO_F correspond à '{'
+terminal PAR_O, PAR_F, ACCO_O, ACCO_F, PTVIRG, VIRG, POINT;
+
+/* Valeurs dynamiques */
+terminal String IDENT;
+terminal Integer ENTIER;
+
+/* ==========================================================
+   NON-TERMINAUX
+   ========================================================== */
+
+non terminal Prog axiome;
+non terminal ArrayList<Noeud> programme;
+non terminal Noeud declaration_globale;
+non terminal Noeud declaration_fonction;
+non terminal Fonction fonction_principale;
+non terminal ArrayList<Noeud> liste_instructions;
+non terminal Noeud instruction;
+non terminal Noeud expression;
+non terminal ArrayList<Noeud> liste_parametres;
+non terminal Noeud parametre;
+non terminal ArrayList<Noeud> arguments_appel;
+
+/* ==========================================================
+   PRIORITÉS ET ASSOCIATIVITÉS
+   ========================================================== */
+
+precedence left MEILLEUR, UN_PEU_MEILLEUR, PAS_BON, UN_PEU_BON, PARFAIT, ETONNANT;
+precedence left AJOUTER, REDUIRE;
+precedence left MONTER, FOUETTER, COUPER;
+
+/* ==========================================================
+   GRAMMAIRE
+   ========================================================== */
+
+start with axiome;
+
+axiome ::= programme:p 
+    {: RESULT = new Prog(p); :};
+
+programme ::= 
+      programme:p declaration_globale:dg {: p.add(dg); RESULT = p; :}
+    | programme:p declaration_fonction:df {: p.add(df); RESULT = p; :}
+    | programme:p fonction_principale:fp {: p.add(fp); RESULT = p; :}
+    | /* epsilon */ {: RESULT = new ArrayList<Noeud>(); :};
+
+/* ----- Variables Globales ----- */
+declaration_globale ::= 
+      ALIMENT INGREDIENTS QUANTITE IDENT:id PTVIRG 
+      // aliment ingrédients quantité k ;
+    | ALIMENT INGREDIENTS QUANTITE IDENT:id MELANGER expression:e PTVIRG
+      // aliment ingrédients quantité i mélanger 10 ;
+    ;
+
+/* ----- Fonction Principale (Main) ----- */
+fonction_principale ::= 
+    VIDE RECETTE PAR_O PAR_F ACCO_O liste_instructions:li ACCO_F
+    {: 
+        Fonction f = new Fonction("main");
+        for(Noeud n : li) { f.ajouterEnfant(n); }
+        RESULT = f; 
+    :};
+
+/* ----- Déclaration de Fonction ----- */
+declaration_fonction ::= 
+    REPAS QUANTITE IDENT:id PAR_O liste_parametres:lp PAR_F ACCO_O liste_instructions:li ACCO_F
+    {: 
+        Fonction f = new Fonction(id);
+        // Ajout des paramètres et instructions dans la fonction selon votre implémentation AST
+        RESULT = f; 
+    :};
+
+liste_parametres ::= 
+      parametre:p {: ArrayList<Noeud> l = new ArrayList<>(); l.add(p); RESULT = l; :}
+    | liste_parametres:lp VIRG parametre:p {: lp.add(p); RESULT = lp; :}
+    | /* epsilon */ {: RESULT = new ArrayList<Noeud>(); :};
+
+parametre ::= 
+    PARAM QUANTITE IDENT:id 
+    {: /* Générer un noeud paramètre */ :};
+
+/* ----- Instructions ----- */
+liste_instructions ::= 
+      liste_instructions:li instruction:i {: li.add(i); RESULT = li; :}
+    | /* epsilon */ {: RESULT = new ArrayList<Noeud>(); :};
+
+instruction ::= 
+      /* Affectation */
+      IDENT:id MELANGER expression:e PTVIRG
+      {: RESULT = new Affectation(new Idf(id), e); :}
+      
+      /* Variable locale (épice) */
+    | EPICE INGREDIENTS QUANTITE IDENT:id MELANGER expression:e PTVIRG
+      {: RESULT = new Affectation(new Idf(id), e); :} // Adapter si besoin d'un noeud Déclaration
+
+      /* Conditionnelle (If/Else) */
+    | CUIT PAR_O expression:cond PAR_F ACCO_O liste_instructions:li1 ACCO_F CRUE ACCO_O liste_instructions:li2 ACCO_F
+      {: RESULT = new Si(cond, new Bloc(li1), new Bloc(li2)); :}
+      
+      /* Boucle (While) */
+    | MIJOTER PAR_O expression:cond PAR_F ACCO_O liste_instructions:li ACCO_F
+      {: RESULT = new TantQue(cond, new Bloc(li)); :}
+
+      /* Ecriture */
+    | SERVIR PAR_O expression:e PAR_F PTVIRG
+      {: RESULT = new Ecrire(e); :}
+      
+      /* Retour de fonction */
+    | DRESSER expression:e PTVIRG
+      {: RESULT = new Retour(e); :}
+      
+      /* Appel de procédure autonome */
+    | PRET IDENT:id PAR_O arguments_appel:args PAR_F PTVIRG
+      {: RESULT = new Appel(new Idf(id), args); :}
+    ;
+
+/* ----- Expressions ----- */
+expression ::= 
+      expression:e1 AJOUTER expression:e2       {: RESULT = new Plus(e1, e2); :}
+    | expression:e1 REDUIRE expression:e2       {: RESULT = new Moins(e1, e2); :}
+    | expression:e1 MONTER expression:e2        {: RESULT = new Multiplication(e1, e2); :}
+    | expression:e1 FOUETTER expression:e2      {: RESULT = new Multiplication(e1, e2); :}
+    | expression:e1 COUPER expression:e2        {: RESULT = new Division(e1, e2); :}
+    | expression:e1 MEILLEUR expression:e2      {: RESULT = new Superieur(e1, e2); :}
+    | expression:e1 UN_PEU_MEILLEUR expression:e2 {: RESULT = new SuperieurEgal(e1, e2); :}
+    | expression:e1 PAS_BON expression:e2       {: RESULT = new Inferieur(e1, e2); :}
+    | expression:e1 UN_PEU_BON expression:e2    {: RESULT = new InferieurEgal(e1, e2); :}
+    | expression:e1 PARFAIT expression:e2       {: RESULT = new Egal(e1, e2); :}
+    | expression:e1 ETONNANT expression:e2      {: RESULT = new Different(e1, e2); :}
+    | PAR_O expression:e PAR_F                  {: RESULT = e; :} // Parenthèses inversées dans le token
+    | IDENT:id                                  {: RESULT = new Idf(id); :}
+    | ENTIER:n                                  {: RESULT = new NoeudInt(n); :} // ou Const selon votre arbre
+    | DEGUSTER PAR_O PAR_F                      {: RESULT = new Lire(); :}
+    | PRET IDENT:id PAR_O arguments_appel:args PAR_F {: RESULT = new Appel(new Idf(id), args); :}
+    ;
+
+arguments_appel ::=
+      expression:e {: ArrayList<Noeud> l = new ArrayList<>(); l.add(e); RESULT = l; :}
+    | arguments_appel:l VIRG expression:e {: l.add(e); RESULT = l; :}
+    | /* epsilon */ {: RESULT = new ArrayList<Noeud>(); :};
