@@ -97,7 +97,7 @@ then
   REPO="$BASEDIR"/repo
 fi
 
-CLASSPATH="$BASEDIR"/etc:"$REPO"/fr/ul/miashs/compil/1.0/compil-1.0.jar
+CLASSPATH="$BASEDIR"/etc:"$REPO"/com/github/vbmacher/java-cup-runtime/11b-20160615-3/java-cup-runtime-11b-20160615-3.jar:"$REPO"/fr/ul/miashs/compil/1.0/compil-1.0.jar
 
 ENDORSED_DIR=
 if [ -n "$ENDORSED_DIR" ] ; then

@@ -72,7 +72,7 @@ if "%JAVACMD%"=="" set JAVACMD=java
 
 if "%REPO%"=="" set REPO=%BASEDIR%\repo
 
-set CLASSPATH="%BASEDIR%"\etc;"%REPO%"\fr\ul\miashs\compil\1.0\compil-1.0.jar
+set CLASSPATH="%BASEDIR%"\etc;"%REPO%"\com\github\vbmacher\java-cup-runtime\11b-20160615-3\java-cup-runtime-11b-20160615-3.jar;"%REPO%"\fr\ul\miashs\compil\1.0\compil-1.0.jar
 
 set ENDORSED_DIR=
 if NOT "%ENDORSED_DIR%" == "" set CLASSPATH="%BASEDIR%"\%ENDORSED_DIR%\*;%CLASSPATH%

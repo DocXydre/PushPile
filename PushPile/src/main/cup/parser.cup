@@ -3,9 +3,42 @@ package fr.ul.miashs.compil.parser;
 import java_cup.runtime.*;
 import java.util.ArrayList;
 import fr.ul.miashs.compil.arbre.*;
+import fr.ul.miashs.compil.arbre.tds.*;
 
 // Code utilisateur pour le parser
 parser code {:
+    private Tds tds = new Tds(new ArrayList<>());
+    private String currentFunctionScope = null;  // Track la fonction courante
+    private int localVarCount = 0;  // Track le nombre de variables locales
+    
+    public Tds getTds() {
+        return tds;
+    }
+    
+    public void setCurrentFunctionScope(String scope) {
+        this.currentFunctionScope = scope;
+        this.localVarCount = 0;  // Reset counter pour chaque fonction
+    }
+    
+    public String getCurrentFunctionScope() {
+        return this.currentFunctionScope;
+    }
+    
+    public int getNextLocalVarRang() {
+        return this.localVarCount++;
+    }
+    
+    public void addParametersToTDS(String functionName, ArrayList<Noeud> paramList) {
+        if (paramList == null || paramList.isEmpty()) return;
+        for (int i = 0; i < paramList.size(); i++) {
+            Noeud param = paramList.get(i);
+            if (param instanceof Idf idf) {
+                String paramName = idf.getValeur().toString();
+                tds.getItems().add(new Item(paramName, "int", Categorie.PARAMETRE, 0, 0, 0, i, functionName));
+            }
+        }
+    }
+    
     public void syntax_error(Symbol cur_token) {
         System.err.println("Erreur de syntaxe de recette à la ligne " + cur_token.left + ", colonne " + cur_token.right);
     }
@@ -74,48 +107,66 @@ precedence left MONTER, FOUETTER, COUPER;
 start with axiome;
 
 axiome ::= programme:p 
-    {: RESULT = new Prog(p); :};
+    {: Prog prog = new Prog(); prog.ajouterDesFils(p); RESULT = prog; :};
 
 programme ::= 
-      programme:p declaration_globale:dg {: p.add(dg); RESULT = p; :}
-    | programme:p declaration_fonction:df {: p.add(df); RESULT = p; :}
-    | programme:p fonction_principale:fp {: p.add(fp); RESULT = p; :}
+      programme:p declaration_globale:dg {: if (dg != null) p.add(dg); RESULT = p; :}
+    | programme:p declaration_fonction:df {: if (df != null) p.add(df); RESULT = p; :}
+    | programme:p fonction_principale:fp {: if (fp != null) p.add(fp); RESULT = p; :}
     | /* epsilon */ {: RESULT = new ArrayList<Noeud>(); :};
 
 /* ----- Variables Globales ----- */
 declaration_globale ::= 
       ALIMENT INGREDIENTS QUANTITE IDENT:id PTVIRG 
-      // aliment ingrédients quantité k ;
+      {: 
+        tds.getItems().add(new Item(id, "int", Categorie.GLOBAL, 0));
+        RESULT = null;
+      :}
     | ALIMENT INGREDIENTS QUANTITE IDENT:id MELANGER expression:e PTVIRG
-      // aliment ingrédients quantité i mélanger 10 ;
+      {: 
+        if (e instanceof Const) {
+          int val = ((Const) e).getValeur();
+          tds.getItems().add(new Item(id, "int", Categorie.GLOBAL, val));
+        } else {
+          tds.getItems().add(new Item(id, "int", Categorie.GLOBAL, 0));
+        }
+        RESULT = null;
+      :}
     ;
 
 /* ----- Fonction Principale (Main) ----- */
 fonction_principale ::= 
-    VIDE RECETTE PAR_O PAR_F ACCO_O liste_instructions:li ACCO_F
+    VIDE RECETTE PAR_O PAR_F ACCO_O 
+    {: setCurrentFunctionScope("main"); :}
+    liste_instructions:li ACCO_F
     {: 
+        tds.getItems().add(new Item("main", "void", Categorie.FONCTION, 0, 0, 0, -1, null));
         Fonction f = new Fonction("main");
-        for(Noeud n : li) { f.ajouterEnfant(n); }
+        f.ajouterDesFils(li);
         RESULT = f; 
     :};
 
 /* ----- Déclaration de Fonction ----- */
 declaration_fonction ::= 
-    REPAS QUANTITE IDENT:id PAR_O liste_parametres:lp PAR_F ACCO_O liste_instructions:li ACCO_F
+    REPAS QUANTITE IDENT:id PAR_O liste_parametres:lp PAR_F ACCO_O 
+    {: setCurrentFunctionScope(id); addParametersToTDS(id, lp); :}
+    liste_instructions:li ACCO_F
     {: 
+        tds.getItems().add(new Item(id, "int", Categorie.FONCTION, 0, lp.size(), 0, -1, null));
         Fonction f = new Fonction(id);
-        // Ajout des paramètres et instructions dans la fonction selon votre implémentation AST
+        f.ajouterDesFils(lp);
+        f.ajouterDesFils(li);
         RESULT = f; 
     :};
 
 liste_parametres ::= 
-      parametre:p {: ArrayList<Noeud> l = new ArrayList<>(); l.add(p); RESULT = l; :}
-    | liste_parametres:lp VIRG parametre:p {: lp.add(p); RESULT = lp; :}
+      parametre:p {: ArrayList<Noeud> l = new ArrayList<>(); if (p != null) l.add(p); RESULT = l; :}
+    | liste_parametres:lp VIRG parametre:p {: if (p != null) lp.add(p); RESULT = lp; :}
     | /* epsilon */ {: RESULT = new ArrayList<Noeud>(); :};
 
 parametre ::= 
     PARAM QUANTITE IDENT:id 
-    {: /* Générer un noeud paramètre */ :};
+    {: RESULT = new Idf(id); :};
 
 /* ----- Instructions ----- */
 liste_instructions ::= 
@@ -125,51 +176,65 @@ liste_instructions ::=
 instruction ::= 
       /* Affectation */
       IDENT:id MELANGER expression:e PTVIRG
-      {: RESULT = new Affectation(new Idf(id), e); :}
+      {: Affectation aff = new Affectation(); aff.setFilsGauche(new Idf(id)); aff.setFilsDroit(e); RESULT = aff; :}
       
       /* Variable locale (épice) */
     | EPICE INGREDIENTS QUANTITE IDENT:id MELANGER expression:e PTVIRG
-      {: RESULT = new Affectation(new Idf(id), e); :} // Adapter si besoin d'un noeud Déclaration
+      {: 
+        // Ajouter la variable locale à la TDS
+        if (getCurrentFunctionScope() != null) {
+          int rang = getNextLocalVarRang();
+          int val = 0;
+          if (e instanceof Const) {
+            val = ((Const) e).getValeur();
+          }
+          tds.getItems().add(new Item(id, "int", Categorie.LOCAL, val, 0, 0, rang, getCurrentFunctionScope()));
+        }
+        Affectation aff = new Affectation(); 
+        aff.setFilsGauche(new Idf(id)); 
+        aff.setFilsDroit(e); 
+        RESULT = aff; 
+      :}
 
       /* Conditionnelle (If/Else) */
     | CUIT PAR_O expression:cond PAR_F ACCO_O liste_instructions:li1 ACCO_F CRUE ACCO_O liste_instructions:li2 ACCO_F
-      {: RESULT = new Si(cond, new Bloc(li1), new Bloc(li2)); :}
+      {: Si si = new Si(); si.setCondition(cond); Bloc b1 = new Bloc(); b1.ajouterDesFils(li1); Bloc b2 = new Bloc(); b2.ajouterDesFils(li2); si.setBlocAlors(b1); si.setBlocSinon(b2); RESULT = si; :}
       
       /* Boucle (While) */
     | MIJOTER PAR_O expression:cond PAR_F ACCO_O liste_instructions:li ACCO_F
-      {: RESULT = new TantQue(cond, new Bloc(li)); :}
+      {: TantQue tq = new TantQue(); tq.setCondition(cond); Bloc b = new Bloc(); b.ajouterDesFils(li); tq.setBloc(b); RESULT = tq; :}
 
       /* Ecriture */
     | SERVIR PAR_O expression:e PAR_F PTVIRG
-      {: RESULT = new Ecrire(e); :}
+      {: Ecrire ecr = new Ecrire(); ecr.setLeFils(e); RESULT = ecr; :}
       
       /* Retour de fonction */
     | DRESSER expression:e PTVIRG
-      {: RESULT = new Retour(e); :}
+      {: Retour ret = new Retour("ret"); ret.setLeFils(e); RESULT = ret; :}
       
       /* Appel de procédure autonome */
     | PRET IDENT:id PAR_O arguments_appel:args PAR_F PTVIRG
-      {: RESULT = new Appel(new Idf(id), args); :}
+      {: Appel appel = new Appel(id); appel.ajouterDesFils(args); RESULT = appel; :}
     ;
 
 /* ----- Expressions ----- */
 expression ::= 
-      expression:e1 AJOUTER expression:e2       {: RESULT = new Plus(e1, e2); :}
-    | expression:e1 REDUIRE expression:e2       {: RESULT = new Moins(e1, e2); :}
-    | expression:e1 MONTER expression:e2        {: RESULT = new Multiplication(e1, e2); :}
-    | expression:e1 FOUETTER expression:e2      {: RESULT = new Multiplication(e1, e2); :}
-    | expression:e1 COUPER expression:e2        {: RESULT = new Division(e1, e2); :}
-    | expression:e1 MEILLEUR expression:e2      {: RESULT = new Superieur(e1, e2); :}
-    | expression:e1 UN_PEU_MEILLEUR expression:e2 {: RESULT = new SuperieurEgal(e1, e2); :}
-    | expression:e1 PAS_BON expression:e2       {: RESULT = new Inferieur(e1, e2); :}
-    | expression:e1 UN_PEU_BON expression:e2    {: RESULT = new InferieurEgal(e1, e2); :}
-    | expression:e1 PARFAIT expression:e2       {: RESULT = new Egal(e1, e2); :}
-    | expression:e1 ETONNANT expression:e2      {: RESULT = new Different(e1, e2); :}
-    | PAR_O expression:e PAR_F                  {: RESULT = e; :} // Parenthèses inversées dans le token
+      expression:e1 AJOUTER expression:e2       {: Plus p = new Plus(); p.setFilsGauche(e1); p.setFilsDroit(e2); RESULT = p; :}
+    | expression:e1 REDUIRE expression:e2       {: Moins m = new Moins(); m.setFilsGauche(e1); m.setFilsDroit(e2); RESULT = m; :}
+    | expression:e1 MONTER expression:e2        {: Multiplication mul = new Multiplication(); mul.setFilsGauche(e1); mul.setFilsDroit(e2); RESULT = mul; :}
+    | expression:e1 FOUETTER expression:e2      {: Multiplication mul = new Multiplication(); mul.setFilsGauche(e1); mul.setFilsDroit(e2); RESULT = mul; :}
+    | expression:e1 COUPER expression:e2        {: Division div = new Division(); div.setFilsGauche(e1); div.setFilsDroit(e2); RESULT = div; :}
+    | expression:e1 MEILLEUR expression:e2      {: Superieur sup = new Superieur(); sup.setFilsGauche(e1); sup.setFilsDroit(e2); RESULT = sup; :}
+    | expression:e1 UN_PEU_MEILLEUR expression:e2 {: SuperieurEgal sep = new SuperieurEgal(); sep.setFilsGauche(e1); sep.setFilsDroit(e2); RESULT = sep; :}
+    | expression:e1 PAS_BON expression:e2       {: Inferieur inf = new Inferieur(); inf.setFilsGauche(e1); inf.setFilsDroit(e2); RESULT = inf; :}
+    | expression:e1 UN_PEU_BON expression:e2    {: InferieurEgal ieg = new InferieurEgal(); ieg.setFilsGauche(e1); ieg.setFilsDroit(e2); RESULT = ieg; :}
+    | expression:e1 PARFAIT expression:e2       {: Egal eg = new Egal(); eg.setFilsGauche(e1); eg.setFilsDroit(e2); RESULT = eg; :}
+    | expression:e1 ETONNANT expression:e2      {: Different dif = new Different(); dif.setFilsGauche(e1); dif.setFilsDroit(e2); RESULT = dif; :}
+    | PAR_O expression:e PAR_F                  {: RESULT = e; :}
     | IDENT:id                                  {: RESULT = new Idf(id); :}
-    | ENTIER:n                                  {: RESULT = new NoeudInt(n); :} // ou Const selon votre arbre
+    | ENTIER:n                                  {: RESULT = new Const(n); :}
     | DEGUSTER PAR_O PAR_F                      {: RESULT = new Lire(); :}
-    | PRET IDENT:id PAR_O arguments_appel:args PAR_F {: RESULT = new Appel(new Idf(id), args); :}
+    | PRET IDENT:id PAR_O arguments_appel:args PAR_F {: Appel appel = new Appel(id); appel.ajouterDesFils(args); RESULT = appel; :}
     ;
 
 arguments_appel ::=
