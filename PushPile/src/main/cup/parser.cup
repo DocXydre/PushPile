@@ -44,9 +44,7 @@ parser code {:
     }
 :}
 
-/* ==========================================================
-   TERMINAUX (Tokens générés par JFlex)
-   ========================================================== */
+/* TERMINAUX */
 
 /* Mots-clés de base */
 terminal ALIMENT, EPICE, PARAM;             // Portées
@@ -92,17 +90,13 @@ non terminal ArrayList<Noeud> liste_parametres;
 non terminal Noeud parametre;
 non terminal ArrayList<Noeud> arguments_appel;
 
-/* ==========================================================
-   PRIORITÉS ET ASSOCIATIVITÉS
-   ========================================================== */
+/* PRIORITÉS ET ASSOCIATIVITÉS */
 
 precedence left MEILLEUR, UN_PEU_MEILLEUR, PAS_BON, UN_PEU_BON, PARFAIT, ETONNANT;
 precedence left AJOUTER, REDUIRE;
 precedence left MONTER, FOUETTER, COUPER;
 
-/* ==========================================================
-   GRAMMAIRE
-   ========================================================== */
+// Grammaire
 
 start with axiome;
 
@@ -115,7 +109,7 @@ programme ::=
     | programme:p fonction_principale:fp {: if (fp != null) p.add(fp); RESULT = p; :}
     | /* epsilon */ {: RESULT = new ArrayList<Noeud>(); :};
 
-/* ----- Variables Globales ----- */
+// Variables Globales
 declaration_globale ::= 
       ALIMENT INGREDIENTS QUANTITE IDENT:id PTVIRG 
       {: 
