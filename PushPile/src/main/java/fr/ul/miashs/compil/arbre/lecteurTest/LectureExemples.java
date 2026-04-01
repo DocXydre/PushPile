@@ -9,9 +9,9 @@ import fr.ul.miashs.compil.arbre.traduction.Generateur;
 import java_cup.runtime.Symbol;
 
 /**
- * Lecteur, parseur et générateur de code pour les fichiers d'exemples
- * Lit les fichiers Test1.txt à Test9.txt, les parse avec CUP/JFlex, 
- * puis génère l'arbre et le code assembleur
+   Lecteur, parseur et générateur de code pour les fichiers d'exemples
+   Lit les fichiers Test1.txt à Test9.txt, les parse avec CUP/JFlex, 
+   puis génère l'arbre et le code assembleur
  */
 public class LectureExemples {
 
