@@ -1,4 +1,4 @@
-package fr.ul.miashs.compil.arbre.tds;
+package fr.ul.miashs.compil.tds;
 
 import java.util.ArrayList;
 
@@ -22,6 +22,24 @@ private final ArrayList<Item> tds;
     public Item getItem(String nom) {
         for (Item symbole : tds) {
             if (symbole.getNom().equals(nom)) {
+                return symbole;
+            }
+        }
+        return null;
+    }
+
+    public Item getItem(String nom, String functionScope) {
+        // Chercher d'abord dans le scope courant (paramètres et variables locales)
+        if (functionScope != null) {
+            for (Item symbole : tds) {
+                if (symbole.getNom().equals(nom) && functionScope.equals(symbole.getScope())) {
+                    return symbole;
+                }
+            }
+        }
+        // Fallback sur les variables globales
+        for (Item symbole : tds) {
+            if (symbole.getNom().equals(nom) && symbole.getScope() == null) {
                 return symbole;
             }
         }

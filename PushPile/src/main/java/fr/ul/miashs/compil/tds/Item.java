@@ -1,4 +1,4 @@
-package fr.ul.miashs.compil.arbre.tds;
+package fr.ul.miashs.compil.tds;
 
 
 public class Item {

@@ -1,55 +1,69 @@
 # PushPile
 
-PushPile est un compilateur développé en Java dans le cadre de la licence MIASHS option MIAGE à l'Université de Lorraine. Il permet de traduire un langage à thématique culinaire en code assembleur pour le simulateur Bsim.
+Compilateur Java pour le langage PushPile développé à l'Université de Lorraine (MIASHS - MIAGE).
 
 ## L'Équipe
 
 - **Chef de projet** : MATHIS Thomas
-- **Développeur** : MIRGUET Ethan
-- **Développeur** : TAMRANI Houda
-- **Développeur** : MELHAOUI Malak
+- **Développeurs** : MIRGUET Ethan, TAMRANI Houda, MELHAOUI Malak
 
-## Lancement Rapide
+## ⚡ Démarrage Rapide
 
 ### Prérequis
-
 - Java 17+
 - Maven 3.8+
 
-### Compilation et Exécution
-
+### Build
 ```bash
-# Compiler le projet
-mvn clean compile
-
-# Lancer le compilateur (point d'entrée test)
-mvn exec:java -Dexec.mainClass="fr.ul.miashs.compil.arbre.lecteurTest.LectureExemples"
+mvn clean package
 ```
 
-## 📂 Structure des Fichiers
+## 🖥️ Utilisation
 
-Le projet suit une architecture basée sur les outils JFlex et CUP :
+### macOS / Linux
+```bash
+./bindist/bin/compiler exemples/Test6.txt [options]
+```
 
-- **src/main/cup/** : Grammaire syntaxique (parser.cup)
-- **src/main/jflex/** : Analyseur lexical (scanner.jflex)
+### Windows
+```bash
+.\bindist\bin\compiler.bat exemples/Test6.txt [options]
+```
+
+### Options
+ `--help`  Affiche l'aide 
+ `--tds`  Table des symboles 
+ `--arbre`  Arbre de syntaxe 
+ `--arbrebsim`  Arbre graphique (fenêtre) 
+ `--all`  TDS + arbre + graphique 
+
+### Exemples
+```bash
+# Compilation simple
+compiler exemples/Test6.txt
+
+# Avec tous les affichages
+compiler exemples/Test6.txt --all
+
+# Arbre graphique seulement
+compiler exemples/Test6.txt --arbrebsim
+```
+
+## 📂 Structure
+
+- **src/main/cup/** : Grammaire (parser.cup)
+- **src/main/jflex/** : Lexer (scanner.jflex)
 - **src/main/java/fr/ul/miashs/compil/** :
-  - **arbre/** : Gestion de l'Arbre Abstrait (AST)
-  - **tds/** : Gestion de la Table des Symboles (TDS)
-  - **traduction/** : Générateur de code assembleur
-  - **lecteurTest/** : Classe principale pour exécuter les tests
+  - `compilateur/` : Point d'entrée (Compiler.java)
+  - `arbre/` : AST
+  - `tds/` : Table des symboles
+  - `traduction/` : Générateur assembleur Bsim
 
-## 🧪 Tests et Progression
+## 🧪 Tests
 
-Le projet a été développé de manière agile suivant 9 points de progression (du programme minimal à la récursivité).
+9 fichiers de test : `exemples/Test1.txt` à `exemples/Test9.txt` (du basique à la récursivité)
 
-Pour changer de test, modifiez le chemin du fichier dans `LectureExemples.java` :
+## 📊 Sortie
 
-```java
-// Modifiez le chiffre de 1 à 9 pour tester les différents paliers
-FileReader fr = new FileReader("exemples/Test6.txt");
-```
-
-Le programme génère automatiquement :
-- L'arbre syntaxique (affichage textuel et graphique)
-- La table des symboles
-- Le code assembleur final
+- Fichier `.asm` au même nom que l'entrée
+- Affichages optionnels selon les options

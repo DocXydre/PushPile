@@ -1,4 +1,4 @@
-package fr.ul.miashs.compil.arbre.tds;
+package fr.ul.miashs.compil.tds;
 
 public enum Categorie {
       
@@ -32,4 +32,3 @@ public enum Categorie {
         return categorie;
     }
 }
-
