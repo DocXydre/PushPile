@@ -1,4 +1,3 @@
-
 package fr.ul.miashs.compil.traduction;
 
 import fr.ul.miashs.compil.arbre.*;
@@ -17,7 +16,7 @@ public class Generateur {
         return base + "_" + (labelCount++);
     }
 
-    // PROGRAMME  
+    // --- ENTRÉE DU PROGRAMME ---
     public String generer_programme(Prog prog) {
         StringBuilder code = new StringBuilder();
         code.append(".include beta.uasm\n");
@@ -28,16 +27,18 @@ public class Generateur {
         code.append("CALL(main)\n");
         code.append("HALT()\n\n");
 
+        // Déclaration des variables globales
         code.append(genererData());
 
+        // Génération de chaque fonction
         for (Noeud fonction : prog.getFils()) {
             code.append(genererFonction((Fonction) fonction));
         }
         
-        code.append("\npile: . = . + 0x1000\n"); // Espace de 4Ko pour la pile
+        code.append("\npile: . = . + 0x1000\n");
         return code.toString();
     }
-//data
+
     private String genererData() {
         StringBuilder data = new StringBuilder();
         for (Item sym : this.tds.getItems()) {
@@ -49,9 +50,9 @@ public class Generateur {
         return data.toString();
     }
 
-    //FONCTIONS  
+    // --- GESTION DES FONCTIONS ---
     public String genererFonction(Fonction f) {
-      StringBuilder code = new StringBuilder();
+        StringBuilder code = new StringBuilder();
         String nomF = f.getValeur().toString();
         Item funcItem = this.tds.getItem(nomF);
 
@@ -65,8 +66,9 @@ public class Generateur {
             code.append(genererInstruction(fils));
         }
 
+        // Label de sortie unique pour la fonction
         code.append("ret_").append(nomF).append(":\n")
-            .append("\tMOVE(BP, SP)\n") // Restaure SP de façon garantie (remplace DEALLOCATE)
+            .append("\tMOVE(BP, SP)\n")
             .append("\tPOP(BP)\n")
             .append("\tPOP(LP)\n")
             .append("\tRTN()\n\n");
@@ -74,7 +76,7 @@ public class Generateur {
         return code.toString();
     }
 
-    //expression
+    // --- GESTION DES EXPRESSIONS (CALCULS) ---
     public String genererExpression(Noeud expr) {
         if (expr == null) return "";
         StringBuilder code = new StringBuilder();
@@ -82,16 +84,17 @@ public class Generateur {
         if (expr instanceof Idf idf) {
             Item item = this.tds.getItem(idf.getValeur().toString());
             if (item.getCategorie().equals(Categorie.LOCAL.getCategorie())) {
-                int offset = (item.getRang() + 1) * -4;
+                // Locales : Offset positif (BP + 4, 8...)
+                int offset = (item.getRang() + 1) * 4;
                 code.append("\tLD(BP, ").append(offset).append(", R0)\n");
             } else if (item.getCategorie().equals(Categorie.PARAMETRE.getCategorie())) {
-                // Calcul robuste pour N paramètres
-                Item fonctionAssociee = this.tds.getItem(item.getScope());
-                int nbParams = fonctionAssociee.getNbParametres();
-                int offset = -(2 + nbParams - item.getRang()) * 4;
-                
+                // Paramètres : Offset négatif calculé selon N (total params)
+                Item funcItem = this.tds.getItem(item.getScope());
+                int N = funcItem.getNbParametres();
+                int offset = -(N - item.getRang() + 2) * 4;
                 code.append("\tLD(BP, ").append(offset).append(", R0)\n");
             } else {
+                // Globales
                 code.append("\tLD(").append(item.getNom()).append(", R0)\n");
             }
             code.append("\tPUSH(R0)\n");
@@ -134,7 +137,7 @@ public class Generateur {
         return code.toString();
     }
 
-    // --- INSTRUCTIONS ---
+    // --- GESTION DES INSTRUCTIONS ---
     public String genererInstruction(Noeud i) {
         if (i instanceof Affectation a) return genererAffectation(a);
         if (i instanceof Ecrire e) return genererEcriture(e);
@@ -149,104 +152,84 @@ public class Generateur {
         }
         return "";
     }
-//affectation
+
     public String genererAffectation(Affectation a) {
         StringBuilder code = new StringBuilder();
-        code.append(genererExpression(a.getFilsDroit()));
+        code.append(genererExpression(a.getFilsDroit())); // Calcule la valeur à droite
         code.append("\tPOP(R0)\n");
         
         Idf gauche = (Idf) a.getFilsGauche();
         Item item = this.tds.getItem(gauche.getValeur().toString());
         
         if (item.getCategorie().equals(Categorie.LOCAL.getCategorie())) {
-            int offset = (item.getRang() + 1) * -4;
+            int offset = (item.getRang() + 1) * 4;
+            code.append("\tST(R0, ").append(offset).append(", BP)\n");
+        } else if (item.getCategorie().equals(Categorie.PARAMETRE.getCategorie())) {
+            Item funcItem = this.tds.getItem(item.getScope());
+            int N = funcItem.getNbParametres();
+            int offset = -(N - item.getRang() + 2) * 4;
             code.append("\tST(R0, ").append(offset).append(", BP)\n");
         } else {
-            code.append("\tST(R0, ").append(item.getNom()).append(")\n");
+            // Globales : ST(reg, label, base_reg)
+            code.append("\tST(R0, ").append(item.getNom()).append(", R31)\n");
         }
         return code.toString();
     }
-//appel de fonction 
+
     public String genererAppel(Appel a) {
         StringBuilder code = new StringBuilder();
         Item func = this.tds.getItem(a.getValeur().toString());
-        
-        // Générer et pusher tous les paramètres
+        // Pousser les arguments
         for (Noeud arg : a.getFils()) {
             code.append(genererExpression(arg));
         }
-
-        // Appeler la fonction
         code.append("\tCALL(").append(a.getValeur()).append(")\n");
-
-        // Deallouer les paramètres (le résultat est dans R0)
         code.append("\tDEALLOCATE(").append(func.getNbParametres()).append(")\n");
-
-        // Pusher le résultat si non void
+        
+        // Si la fonction renvoie quelque chose, le résultat est dans R0
         if (!func.getType().equals("void")) {
             code.append("\tPUSH(R0)\n");
         }
-        
         return code.toString();
     }
-//retour de fonction
-   /* public String genererRetour(Retour r) {
-        StringBuilder code = new StringBuilder();
-        code.append(genererExpression(r.getLeFils()));
-        code.append("\tPOP(R0)\n");
-        
-        Item func = this.tds.getItem(r.getValeur().toString());
-       
-        code.append("\tPUTFRAME(R0, ").append(offsetRes).append(")\n");
-        code.append("\tBR(ret_").append(r.getValeur()).append(")\n");
-        return code.toString();
-    }
-    */
+
     public String genererRetour(Retour r) {
         StringBuilder code = new StringBuilder();
         code.append(genererExpression(r.getLeFils()));
         code.append("\tPOP(R0)\n");
-        code.append("\tBR(ret_").append(r.getValeur()).append(")\n");
+        code.append("\tBR(ret_").append(this.tds.getItem(r.getValeur().toString()).getNom()).append(")\n");
         return code.toString();
     }
    
-//conditionnel
     public String genererConditionnel(Si s) {
         String labelElse = getNextLabel("else");
         String labelEnd = getNextLabel("endif");
         StringBuilder code = new StringBuilder();
-        
         code.append(genererExpression(s.getCondition()));
         code.append("\tPOP(R0)\n");
         code.append("\tBF(R0, ").append(labelElse).append(")\n");
-        
         code.append(genererInstruction(s.getBlocAlors()));
         code.append("\tBR(").append(labelEnd).append(")\n");
-        
         code.append(labelElse).append(":\n");
         if (s.getBlocSinon() != null) code.append(genererInstruction(s.getBlocSinon()));
-        
         code.append(labelEnd).append(":\n");
         return code.toString();
     }
-//iteration
+
     public String genererIteration(TantQue t) {
         String labelLoop = getNextLabel("loop");
         String labelEnd = getNextLabel("endloop");
         StringBuilder code = new StringBuilder();
-        
         code.append(labelLoop).append(":\n");
         code.append(genererExpression(t.getCondition()));
         code.append("\tPOP(R0)\n");
         code.append("\tBF(R0, ").append(labelEnd).append(")\n");
-        
         code.append(genererInstruction(t.getBloc()));
         code.append("\tBR(").append(labelLoop).append(")\n");
-        
         code.append(labelEnd).append(":\n");
         return code.toString();
     }
-//ecriture
+
     public String genererEcriture(Ecrire e) {
         return genererExpression(e.getLeFils()) + "\tPOP(R0)\n\tWRINT()\n";
     }

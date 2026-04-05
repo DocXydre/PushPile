@@ -28,6 +28,24 @@ private final ArrayList<Item> tds;
         return null;
     }
 
+    public Item getItem(String nom, String functionScope) {
+        // Chercher d'abord dans le scope courant (paramètres et variables locales)
+        if (functionScope != null) {
+            for (Item symbole : tds) {
+                if (symbole.getNom().equals(nom) && functionScope.equals(symbole.getScope())) {
+                    return symbole;
+                }
+            }
+        }
+        // Fallback sur les variables globales
+        for (Item symbole : tds) {
+            if (symbole.getNom().equals(nom) && symbole.getScope() == null) {
+                return symbole;
+            }
+        }
+        return null;
+    }
+
     public void Rechercher(){}
     public void Ajouter(){}
 

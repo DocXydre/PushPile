@@ -134,7 +134,8 @@ fonction_principale ::=
     {: setCurrentFunctionScope("main"); :}
     liste_instructions:li ACCO_F
     {: 
-        tds.getItems().add(new Item("main", "void", Categorie.FONCTION, 0, 0, 0, -1, null));
+        int nbLocales = localVarCount;  // Récupère le nombre de variables locales parsées
+        tds.getItems().add(new Item("main", "void", Categorie.FONCTION, 0, 0, nbLocales, -1, null));
         Fonction f = new Fonction("main");
         f.ajouterDesFils(li);
         RESULT = f; 
@@ -146,7 +147,8 @@ declaration_fonction ::=
     {: setCurrentFunctionScope(id); addParametersToTDS(id, lp); :}
     liste_instructions:li ACCO_F
     {: 
-        tds.getItems().add(new Item(id, "int", Categorie.FONCTION, 0, lp.size(), 0, -1, null));
+        int nbLocales = localVarCount;  // Récupère le nombre de variables locales parsées
+        tds.getItems().add(new Item(id, "int", Categorie.FONCTION, 0, lp.size(), nbLocales, -1, null));
         Fonction f = new Fonction(id);
         f.ajouterDesFils(lp);
         f.ajouterDesFils(li);
@@ -204,7 +206,7 @@ instruction ::=
       
       /* Retour de fonction */
     | DRESSER expression:e PTVIRG
-      {: Retour ret = new Retour("ret"); ret.setLeFils(e); RESULT = ret; :}
+      {: Retour ret = new Retour(getCurrentFunctionScope()); ret.setLeFils(e); RESULT = ret; :}
       
       /* Appel de procédure autonome */
     | PRET IDENT:id PAR_O arguments_appel:args PAR_F PTVIRG
