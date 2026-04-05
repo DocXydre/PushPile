@@ -3,7 +3,7 @@ package fr.ul.miashs.compil.parser;
 import java_cup.runtime.*;
 import java.util.ArrayList;
 import fr.ul.miashs.compil.arbre.*;
-import fr.ul.miashs.compil.arbre.tds.*;
+import fr.ul.miashs.compil.tds.*;
 
 // Code utilisateur pour le parser
 parser code {:

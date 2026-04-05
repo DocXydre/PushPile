@@ -1,10 +1,10 @@
-package fr.ul.miashs.compil.arbre.genererCode;
+package fr.ul.miashs.compil.genererCode;
 
 import java.util.ArrayList;
 
 import fr.ul.miashs.compil.arbre.*;
-import fr.ul.miashs.compil.arbre.tds.*;
-import fr.ul.miashs.compil.arbre.traduction.Generateur;
+import fr.ul.miashs.compil.tds.*;
+import fr.ul.miashs.compil.traduction.Generateur;
 
 public class GenererVarParam {
 

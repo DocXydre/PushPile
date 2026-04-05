@@ -16,14 +16,39 @@ PushPile est un compilateur développé en Java dans le cadre de la licence MIAS
 - Java 17+
 - Maven 3.8+
 
-### Compilation et Exécution
+### Build
 
 ```bash
-# Compiler le projet
-mvn clean compile
+# Compiler et packager le projet
+mvn clean package
+```
 
-# Lancer le compilateur (point d'entrée test)
-mvn exec:java -Dexec.mainClass="fr.ul.miashs.compil.arbre.lecteurTest.LectureExemples"
+### Utilisation
+
+```bash
+# Afficher l'aide
+./bindist/bin/compiler --help
+
+# Compiler un fichier (affiche arbre + TDS, génère output.asm)
+./bindist/bin/compiler exemples/Test6.txt
+```
+
+**Sortie :**
+- Affichage de l'arbre de syntaxe dans le terminal
+- Affichage de la table des symboles (TDS) dans le terminal
+- Génération du fichier code assembleur BSim : `output.asm`
+
+### Commandes Disponibles
+
+| Commande | Description |
+|----------|-------------|
+| `compiler <fichier.prog>` | Compile un fichier (sortie: `output.asm`) |
+| `compiler --help` | Affiche l'aide |
+| `compiler -h` | Affiche l'aide (version courte) |
+
+**Exemple :**
+```bash
+./bindist/bin/compiler exemples/Test6.txt
 ```
 
 ## 📂 Structure des Fichiers
@@ -33,23 +58,28 @@ Le projet suit une architecture basée sur les outils JFlex et CUP :
 - **src/main/cup/** : Grammaire syntaxique (parser.cup)
 - **src/main/jflex/** : Analyseur lexical (scanner.jflex)
 - **src/main/java/fr/ul/miashs/compil/** :
+  - **main/** : Point d'entrée - **Compiler.java**
   - **arbre/** : Gestion de l'Arbre Abstrait (AST)
   - **tds/** : Gestion de la Table des Symboles (TDS)
-  - **traduction/** : Générateur de code assembleur
-  - **lecteurTest/** : Classe principale pour exécuter les tests
+  - **traduction/** : Générateur de code assembleur BSim
+  - **lecteurTest/** : Classe de test (ancienne interface)
 
-## 🧪 Tests et Progression
+## 🧪 Exemples d'Utilisation
 
-Le projet a été développé de manière agile suivant 9 points de progression (du programme minimal à la récursivité).
+Le projet inclut 9 fichiers de test (`exemples/Test1.txt` à `exemples/Test9.txt`) couvrant différents niveaux de complexité, du programme minimal à la récursivité.
 
-Pour changer de test, modifiez le chemin du fichier dans `LectureExemples.java` :
+```bash
+# Compiler Test1 (programme vide)
+./bindist/bin/compiler exemples/Test1.txt
 
-```java
-// Modifiez le chiffre de 1 à 9 pour tester les différents paliers
-FileReader fr = new FileReader("exemples/Test6.txt");
+# Compiler Test6 (conditions)
+./bindist/bin/compiler exemples/Test6.txt
+
+# Compiler Test9 (récursivité - niveau maximal)
+./bindist/bin/compiler exemples/Test9.txt
 ```
 
 Le programme génère automatiquement :
-- L'arbre syntaxique (affichage textuel et graphique)
+- L'arbre syntaxique (affichage textuel)
 - La table des symboles
-- Le code assembleur final
+- Le code assembleur BSim dans `output.asm`

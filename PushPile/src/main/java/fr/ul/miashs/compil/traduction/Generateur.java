@@ -1,9 +1,8 @@
 
-
-package fr.ul.miashs.compil.arbre.traduction;
+package fr.ul.miashs.compil.traduction;
 
 import fr.ul.miashs.compil.arbre.*;
-import fr.ul.miashs.compil.arbre.tds.*;
+import fr.ul.miashs.compil.tds.*;
 
 public class Generateur {
 

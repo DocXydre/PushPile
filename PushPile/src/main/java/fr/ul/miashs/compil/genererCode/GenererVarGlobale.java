@@ -1,4 +1,4 @@
-package fr.ul.miashs.compil.arbre.genererCode;
+package fr.ul.miashs.compil.genererCode;
 
 import java.util.ArrayList;
 
@@ -6,12 +6,12 @@ import fr.ul.miashs.compil.arbre.Fonction;
 import fr.ul.miashs.compil.arbre.GuiAfficheur;
 import fr.ul.miashs.compil.arbre.Prog;
 import fr.ul.miashs.compil.arbre.TxtAfficheur;
-import fr.ul.miashs.compil.arbre.tds.*;
-import fr.ul.miashs.compil.arbre.traduction.Generateur;
+import fr.ul.miashs.compil.tds.*;
+import fr.ul.miashs.compil.traduction.Generateur;
 
 public class GenererVarGlobale {
     public static void main(String[] args) {
-        fr.ul.miashs.compil.arbre.tds.Tds tds = new Tds(new ArrayList<>());
+        Tds tds = new Tds(new ArrayList<>());
         Generateur generateur = new Generateur(tds);
         Prog prog = new Prog();
         Fonction fonction = new Fonction("main");

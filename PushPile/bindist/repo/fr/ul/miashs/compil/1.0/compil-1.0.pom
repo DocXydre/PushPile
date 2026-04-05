@@ -38,9 +38,9 @@
 		<!-- Où stocker la distribution binaire -->
 		<project.bindist.dir>${project.basedir}/bindist</project.bindist.dir>
 		<!-- Nom de la classe principale -->
-		<project.bin.classname>${project.groupId}.${project.artifactId}.arbre.lecteurTest.LectureExemples</project.bin.classname>
-		<!-- Nom de la classe principale -->
-		<project.bin.appname>lecteurTest</project.bin.appname>
+		<project.bin.classname>fr.ul.miashs.compil.compilateur.Compiler</project.bin.classname>
+		<!-- Nom de l'appli -->
+		<project.bin.appname>compiler</project.bin.appname>
 	</properties>
 	<build>
 		<plugins>

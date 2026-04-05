@@ -1,9 +1,9 @@
-package fr.ul.miashs.compil.arbre.genererCode;
+package fr.ul.miashs.compil.genererCode;
 
 import java.util.ArrayList;
 
-import fr.ul.miashs.compil.arbre.tds.*;
-import fr.ul.miashs.compil.arbre.traduction.*;
+import fr.ul.miashs.compil.tds.*;
+import fr.ul.miashs.compil.traduction.*;
 import fr.ul.miashs.compil.arbre.*;
 
 public class GenererIteration {
