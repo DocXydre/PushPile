@@ -7,7 +7,7 @@ Compilateur Java pour le langage PushPile développé à l'Université de Lorrai
 - **Chef de projet** : MATHIS Thomas
 - **Développeurs** : MIRGUET Ethan, TAMRANI Houda, MELHAOUI Malak
 
-## ⚡ Démarrage Rapide
+## Démarrage Rapide
 
 ### Prérequis
 - Java 17+
@@ -18,7 +18,7 @@ Compilateur Java pour le langage PushPile développé à l'Université de Lorrai
 mvn clean package
 ```
 
-## 🖥️ Utilisation
+## Utilisation
 
 ### macOS / Linux
 ```bash
@@ -49,7 +49,7 @@ compiler exemples/Test6.txt --all
 compiler exemples/Test6.txt --arbrebsim
 ```
 
-## 📂 Structure
+## Structure
 
 - **src/main/cup/** : Grammaire (parser.cup)
 - **src/main/jflex/** : Lexer (scanner.jflex)
@@ -59,11 +59,11 @@ compiler exemples/Test6.txt --arbrebsim
   - `tds/` : Table des symboles
   - `traduction/` : Générateur assembleur Bsim
 
-## 🧪 Tests
+## Tests
 
 9 fichiers de test : `exemples/Test1.txt` à `exemples/Test9.txt` (du basique à la récursivité)
 
-## 📊 Sortie
+## Sortie
 
 - Fichier `.asm` au même nom que l'entrée
 - Affichages optionnels selon les options
