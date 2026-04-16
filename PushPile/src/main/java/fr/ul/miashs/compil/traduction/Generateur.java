@@ -16,7 +16,7 @@ public class Generateur {
         return base + "_" + (labelCount++);
     }
 
-    // --- ENTRÉE DU PROGRAMME ---
+    // ENTRÉE DU PROGRAMME
     public String generer_programme(Prog prog) {
         StringBuilder code = new StringBuilder();
         code.append(".include beta.uasm\n");
@@ -50,7 +50,7 @@ public class Generateur {
         return data.toString();
     }
 
-    // --- GESTION DES FONCTIONS ---
+    // GESTION DES FONCTIONS
     public String genererFonction(Fonction f) {
         StringBuilder code = new StringBuilder();
         String nomF = f.getValeur().toString();
@@ -76,7 +76,7 @@ public class Generateur {
         return code.toString();
     }
 
-    // --- GESTION DES EXPRESSIONS (CALCULS) ---
+    // GESTION DES EXPRESSIONS (CALCULS)
     public String genererExpression(Noeud expr) {
         if (expr == null) return "";
         StringBuilder code = new StringBuilder();
@@ -137,7 +137,7 @@ public class Generateur {
         return code.toString();
     }
 
-    // --- GESTION DES INSTRUCTIONS ---
+    // GESTION DES INSTRUCTIONS 
     public String genererInstruction(Noeud i) {
         if (i instanceof Affectation a) return genererAffectation(a);
         if (i instanceof Ecrire e) return genererEcriture(e);

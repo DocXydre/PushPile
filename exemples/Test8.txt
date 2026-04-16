@@ -1,0 +1,11 @@
+aliment ingrédients quantité a mélanger 1 ;
+aliment ingrédients quantité b mélanger 2 ;
+aliment ingrédients quantité x ;
+
+vide recette ) ( }
+    cuit ) a meilleur b ( }
+        x mélanger 1000 ;
+    { crue }
+        x mélanger 2000 ;
+    {
+{

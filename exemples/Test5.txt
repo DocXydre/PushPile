@@ -1,0 +1,6 @@
+aliment ingrédients quantité a mélanger 100 ;
+aliment ingrédients quantité b mélanger 170 ;
+
+vide recette ) ( }
+    servir ) ) a monter 2 ( ajouter ) ) b réduire 5 ( couper 3 ( ( ;
+{

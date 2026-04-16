@@ -1,0 +1,11 @@
+repas quantité f ) param quantité a ( }
+    cuit ) a un-peu-bon 0 ( }
+        dresser 0 ;
+    { crue }
+        dresser a ajouter prêt f ) a réduire 1 ( ;
+    {
+{
+
+vide recette ) ( }
+    servir ) prêt f ) 6 ( ( ;
+{

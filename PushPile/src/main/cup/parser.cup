@@ -74,9 +74,7 @@ terminal PAR_O, PAR_F, ACCO_O, ACCO_F, PTVIRG, VIRG, POINT;
 terminal String IDENT;
 terminal Integer ENTIER;
 
-/* ==========================================================
-   NON-TERMINAUX
-   ========================================================== */
+/* NON-TERMINAUX */
 
 non terminal Prog axiome;
 non terminal ArrayList<Noeud> programme;
@@ -128,7 +126,7 @@ declaration_globale ::=
       :}
     ;
 
-/* ----- Fonction Principale (Main) ----- */
+/* Fonction Principale (Main) */
 fonction_principale ::= 
     VIDE RECETTE PAR_O PAR_F ACCO_O 
     {: setCurrentFunctionScope("main"); :}
@@ -141,7 +139,7 @@ fonction_principale ::=
         RESULT = f; 
     :};
 
-/* ----- Déclaration de Fonction ----- */
+/* Déclaration de Fonction */
 declaration_fonction ::= 
     REPAS QUANTITE IDENT:id PAR_O liste_parametres:lp PAR_F ACCO_O 
     {: setCurrentFunctionScope(id); addParametersToTDS(id, lp); :}
@@ -164,7 +162,7 @@ parametre ::=
     PARAM QUANTITE IDENT:id 
     {: RESULT = new Idf(id); :};
 
-/* ----- Instructions ----- */
+/* Instructions */
 liste_instructions ::= 
       liste_instructions:li instruction:i {: li.add(i); RESULT = li; :}
     | /* epsilon */ {: RESULT = new ArrayList<Noeud>(); :};
@@ -213,7 +211,7 @@ instruction ::=
       {: Appel appel = new Appel(id); appel.ajouterDesFils(args); RESULT = appel; :}
     ;
 
-/* ----- Expressions ----- */
+/* Expressions */
 expression ::= 
       expression:e1 AJOUTER expression:e2       {: Plus p = new Plus(); p.setFilsGauche(e1); p.setFilsDroit(e2); RESULT = p; :}
     | expression:e1 REDUIRE expression:e2       {: Moins m = new Moins(); m.setFilsGauche(e1); m.setFilsDroit(e2); RESULT = m; :}
